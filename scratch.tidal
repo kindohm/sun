@@ -1,0 +1,244 @@
+let 
+  gtfo pat = (const $ s "~") $ pat
+  g = gtfo
+  sb = sometimesBy
+  ssb = someCyclesBy
+  shift = (1 ~>)
+  shiftBy n = (n ~>)
+  shiftby = shiftBy
+  shrand x = (shiftBy x $ rand)
+  one prob p = sb prob (off 0.0625 id) $ shiftBy 100 $ p
+  roll prob p = sb prob (off "3e" id) $ shiftBy 102 $ p
+  roll2 prob p = sb prob (off (0.0625*3) id) $ shiftBy 103 $ p
+  dg0 = id
+  dg1 = degradeBy 0.1
+  dg2 = degradeBy 0.2
+  dg3 = degradeBy 0.3 
+  dg4 = degradeBy 0.4
+  dg5 = degradeBy 0.5
+  dg6 = degradeBy 0.6
+  dg7 = degradeBy 0.7
+  dg8 = degradeBy 0.8
+  dg9 = degradeBy 0.9
+  rytm = s "rytm"
+  pad1 = midichan 0 # rytm
+  pad2 = midichan 1 # rytm
+  pad3 = midichan 2 # rytm
+  pad4 = midichan 3 # rytm
+  pad5 = midichan 4 # rytm
+  pad6 = midichan 5 # rytm
+  pad7 = midichan 6 # rytm
+  pad8 = midichan 7 # rytm
+  pad9 = midichan 8 # rytm
+  pad10 = midichan 9 # rytm
+  pad11 = midichan 10 # rytm
+  pad12 = midichan 11 # rytm
+  padfx = midichan 12 # rytm
+  balance pat = ccv pat # ccn 19
+  env pat = ccv pat # ccn 77
+  cutoff pat = ccv pat # ccn 74
+  maxcutoff = 90
+  decay pat = ccv pat # ccn 80
+  bend pat = ccv pat # ccn 23
+  lfospeed pat = ccv pat # ccn 102
+  lfodepth pat = ccv pat # ccn 109
+  pad1pat = midichan (randcat ["0*16", "0*16", "0*8", fast (4/3) $ "0*4"])
+  pad2pat = midichan ((112 ~>) $ randcat ["1*16", "1*16", "1*8", fast (4/3) $ "1*4"])
+  delaytime pat = ccv pat # ccn 16
+  delayfb pat = ccv pat # ccn 19
+  delaysend pat = ccv pat # ccn 82
+  revsend pat = ccv pat # ccn 83
+  pan pat = ccv pat # ccn 10
+  detune pat = ccv pat # ccn 20
+  tune pat = ccv pat # ccn 17
+  config pat = ccv pat # ccn 21
+  sampletune pat = ccv pat # ccn 24
+  samplestart pat = ccv pat # ccn 28
+  sampleend pat = ccv pat # ccn 29
+  samplelevel pat = ccv pat # ccn 31
+  balancelfo segments period min max = balance (struct segments $ slow period $ range min max $ sine)
+  detoctup = 112
+  detoctdown = 16
+  octup = 88
+  octdown = 40
+  lfo segments period min max = (segment segments $ slow period $ range min max $ tri)
+  lfo1 period min max = lfo 1 period min max
+  lfo2 period min max = lfo 2 period min max
+  lfo4 period min max = lfo 4 period min max
+  lfo8 period min max = lfo 8 period min max
+  lfo1rand period min max = (segment 1 $ slow period $ range min max $ rand)
+  lfo2rand period min max = (segment 2 $ slow period $ range min max $ rand)
+  lfo4rand period min max = (segment 4 $ slow period $ range min max $ rand)
+  lfo8rand period min max = (segment 8 $ slow period $ range min max $ rand)
+
+do
+  d1 
+    $ (|* gain 1.2)
+    $ stack [
+      g $ stack [ 
+        note "c3*4" # gain (range 0.8 1 $ slow 1.21 tri)
+        , pan 60
+        , decay (lfo4 6.1 20 127)
+        , env (lfo4 5.1 64 80)
+        , cutoff (lfo4 8.1 20 80)
+        , balance (lfo8 7.1 0 127)
+        , detune (segment (1/4) $ range 0 127 $ slow 8.23423 tri)
+        , tune octdown
+        , revsend 80
+        , delaysend (lfo4 2.1 0 50)
+        , config (segment (1/4) $ range 45 65 $ slow 2.222 tri)
+        , bend (lfo8 8.333 0 127)
+      ] # pad1
+      , g $ stack [ 
+        note "e4*4" # gain (range 0.8 1 $ slow 1.333 tri)
+        , pan 70
+        , decay (lfo4 6.333 20 127)
+        , env (lfo4 5.333 64 80)
+        , cutoff (lfo4 8.666 20 80)
+        , balance (lfo8 5.111 0 127)
+        , detune (segment 2 $ range 0 127 $ slow 7.7777 tri)
+        , tune octup
+        , revsend (lfo4 4.887 60 120)
+        , delaysend (lfo4 2.2 0 50)
+        , config (segment (1/4) $ range 55 65 $ slow 3 tri)
+        , bend (lfo8 9.99 0 127)
+      ] # pad2
+      , stack [
+        gain 1 # delaytime 24
+        , delayfb (segment 1 $ range 30 40 $ slow 33 rand)
+      ] # padfx
+      , stack [
+        sb 0.5 (|+ midichan 1) 
+          $ shift
+          $ one 0.333 
+          $ dg4 
+          $ struct "1(<3 2 3 2 5>,16,<0 11 21>)" $ pad7 # note "c3"
+        , pad7 # decay (range 20 127 $ shrand 1000)
+        , pad8 # decay (range 100 127 $ shrand 2000)
+        , delaysend 0 # pad7
+        , delaysend 0 # pad8
+        , pad7 # samplelevel 127
+        , pad7 # env 90
+        , pad8 # samplelevel 127
+        , g $ slow 2 $ dg4 $ struct "1(3,8)" $ pad5 # note "{-24 -23 -22}%16"
+        , pad5 # samplestart (range 0 60 $ shrand 3000)
+        , pad5 # sampleend (range 70 127 $ shrand 4000)
+        , pad5 # decay (range 64 127 $ shrand 5000)
+        , slow 8 $ pad6 # note "c3"
+        , pad6 # delaysend 0
+        , dg4 $ pan "64*16"
+            # midichan (shiftBy 383 $ choose [8,9,10,11]) # note "c3" # rytm # gain (range 0.7 1 $ slow 333 rand)
+        , g $ fast 2 
+          $ roll 0.2 $ (0.5 ~>) $ pad4 # note "c3"
+        , g $ note (scale "ritusen" ("{0 -1 1 -2 2}%16" |- "12")) # pad3
+        , pad3 # delaysend 0
+      ]
+    ] # cps 0.5
+
+
+let
+  reset = stack [
+            stack [
+              bend 64
+              , tune 64
+              , detune 64
+              , config 0
+              , env 0
+              , cutoff 127
+              , decay 64
+              , lfodepth 64
+              , lfospeed 64
+            ] # pad1
+            , stack [
+              bend 64
+              , tune octup
+              , detune 64
+              , config 0
+              , env 0
+              , cutoff 127
+              , decay 64
+              , lfodepth 64
+              , lfospeed 64
+            ] # pad2
+            , stack [
+              samplelevel 0
+              , decay 10
+            ] # pad7
+            , stack [
+              samplelevel 0
+              , decay 10
+              , delaysend 0
+            ] # pad8
+            , stack [
+              delaytime 23
+              , delayfb 50
+            ] # padfx
+            , delaysend 0 # pad9
+            , delaysend 0 # pad10
+            , delaysend 0 # pad11
+            , delaysend 0 # pad12
+          ]
+
+d1 $ reset
+
+hush
+
+
+d1
+  $ (|* gain 1.2)
+  $ stack [
+    stack [
+      g $ gain "1(<3 7 5>,16,<0 3 11 13>)" 
+        # note (scale "minor" (slowcat ["[0 2 -1]*5", "[0 2 -2 -3]*6", "[7 6 5 9]*7", "[0 2 3 4 -1]*9"] |- "12"))
+      , decay 30
+      , detune detoctup
+      , env 120
+      , cutoff 50
+      , config 3
+      , balance (lfo8 4.1 0 127)
+      , delaysend 65
+    ] # pad1
+    , stack [
+      g $ gain "1(<3 10 9 7>,16,<1 5 7 5>)"
+        # note (scale "minor" (slowcat ["[0 1 2]*4", "[0 1]*2", "[5 9 4]*2"] |- "12"))
+      , tune octdown
+      , detune detoctup
+      , decay 40
+      , balance (lfo8 5.1 0 127)
+      , config 60
+      , cutoff 60
+      , env 70
+      , bend (segment 4 $ range 0 127 $ slow 11 tri)
+      , delaysend 10
+    ] # pad2
+    , stack [
+      sb 0.333 (|+ midichan 1) $ shift 
+        $ roll 0.45
+        $ one 0.333
+        $ dg0 $ gain "1(<3 3 5>,16,<0 11 15>)" # pad7 # note "c3"
+      , decay (segment 4 $ range 40 120 $ shrand 8392) # pad7
+      , decay 127 # pad8
+      , dg2 $ struct (binaryN 16 "<8293 3281 28932>") $ pad11 # note "c3"
+      , pad8 # delaysend (lfo4 4.1 60 100)
+      , samplelevel 0 # pad7
+      , samplelevel 0 # pad8
+      , cutoff (segment "<1 2 0.5 3>" $ choose [20]) # pad7
+    ]
+    , stack [
+      slow 4 $ pad5 # note "c3"
+      , g $ slow 1.5 $ pad6 # note "c3"
+      , samplestart (lfo2 3.1 0 60) # pad6
+      , sampleend (lfo2 5.22 70 127) # pad6
+      , samplestart (lfo2 4.1 0 60) # pad5
+      , sampleend (lfo2 5.237 70 127) # pad5
+    ]
+    , stack [
+      delaytime (segment "<1 2 3 0.5 4>" $ slow 33 $ choose [0,1,3,7,11,15,23,47])
+     , delayfb 50
+    ] # padfx
+  ] # cps 0.5
+
+hush
+
+
+once reset
