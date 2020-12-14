@@ -1,0 +1,63 @@
+once reset
+
+hush
+
+
+do
+  d1
+    $ shift
+    $ (|* gain 1.2)
+    $ stack [
+      g $ stack [
+        note "c3*16" # gain (range 0.6 0.8 $ slow 2.1 rand)
+        , revsend 40
+        , decay 20
+        , delaysend 0
+        , env 120
+        , cutoff 40
+        , balance 64
+        , config 20
+        , tune octdown
+        , detune detoctup
+        , bend 64
+      ] # pad1
+      , g $ stack [
+        note "c3*16" # gain (range 0.4 1 $ slow 2.881 tri)
+        , revsend 40
+        , decay (lfo8 4.555 20 100)
+        , delaysend (lfo4 7.1 0 64)
+        , env 100
+        , cutoff (lfo4 3.333 30 100)
+        , balance (lfo8 3.666 0 127)
+        , config 61
+        , tune octup
+        , detune detoctdown
+        , bend (lfo8 6.1 0 127)
+      ] # pad2
+      , g $ stack [
+        sb 0.5 (|+ midichan 1) 
+          $ shift
+          $ dg5
+          $ fast 16 $ pad7 # note "c3" # gain (range 0.7 1 $ shrand 100)
+        , slow 5 $ pad6 # note "c3"
+      ]
+      , stack [
+        delaytime (segment 1 $ range 0 48 $ slow 333 rand)
+        , delayfb (segment 1 $ range 60 66 $ slow 444 rand)
+      ] # padfx
+      , g $ stack [
+        g $ note (scale "ritusen" ("{0 -1 1 -2 -3}%16" |- "12"))
+        , cutoff 30
+        , env 64
+        , decay 50
+        , tune octup
+        , detune 75
+        , revsend 1
+        , delaysend 30
+        , balance 64
+      ] # pad3
+    ] # cps 0.5
+
+hush
+
+once reset

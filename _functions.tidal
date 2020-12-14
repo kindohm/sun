@@ -70,3 +70,44 @@ let
   lfo2rand period min max = (segment 2 $ slow period $ range min max $ rand)
   lfo4rand period min max = (segment 4 $ slow period $ range min max $ rand)
   lfo8rand period min max = (segment 8 $ slow period $ range min max $ rand)
+  reset = stack [
+            stack [
+              bend 64
+              , tune 64
+              , detune 64
+              , config 0
+              , env 0
+              , cutoff 127
+              , decay 64
+              , lfodepth 64
+              , lfospeed 64
+            ] # pad1
+            , stack [
+              bend 64
+              , tune octup
+              , detune 64
+              , config 0
+              , env 0
+              , cutoff 127
+              , decay 64
+              , lfodepth 64
+              , lfospeed 64
+            ] # pad2
+            , stack [
+              samplelevel 0
+              , decay 10
+            ] # pad7
+            , stack [
+              samplelevel 0
+              , decay 10
+              , delaysend 0
+            ] # pad8
+            , stack [
+              delaytime 23
+              , delayfb 50
+            ] # padfx
+            , delaysend 0 # pad9
+            , delaysend 0 # pad10
+            , delaysend 0 # pad11
+            , delaysend 0 # pad12
+          ]
